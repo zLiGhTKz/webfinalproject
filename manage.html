@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="managecss.css">
+    <title>管理訂單</title>
+</head>
+
+<body>
+    <header>
+        <h1>Bookability</h1>
+        <nav>
+            <ul>
+                <li><a href="menu.html">首頁</a></li>
+                <li><a href="cart.html">購物車</a></li>
+                <li><a href="wishl.html">願望清單</a></li>
+                <li><a href="manage.html">管理訂單</a></li>
+                <li><a href="history.html">歷史記錄</a></li>
+                <li><a href="personal.html">個人資料</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <h1>管理訂單</h1>
+
+    <table id="order-table">
+        <thead>
+            <tr>
+                <th>訂單編號</th>
+                <th>圖片</th>
+                <th>書名</th>
+                <th>狀態</th>
+                <th>價格</th>
+                <th>行程</th>
+                <th>付款方式</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- order items will be dynamically generated here -->
+        </tbody>
+    </table>
+
+    <script>
+        fetch('http://localhost:3000/api/orders')
+            .then(response => response.json())
+            .then(orderItems => {
+                const orderTableBody = document.querySelector('#order-table tbody');
+
+                orderItems.forEach(item => {
+                    const row = document.createElement('tr');
+
+                    const idCell = document.createElement('td');
+                    idCell.textContent = item.O_ID;
+
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = item.B_name;
+
+                    const statusCell = document.createElement('td');
+                    statusCell.textContent = item.O_status;
+
+                    const priceCell = document.createElement('td');
+                    priceCell.textContent = item.B_price;
+
+                    const tripCell = document.createElement('td');
+                    tripCell.textContent = item.O_trip;
+
+                    const paywayCell = document.createElement('td');
+                    paywayCell.textContent = item.O_payway;
+
+                    const imgCell = document.createElement('td');
+                    const img = document.createElement('img');
+                    img.src = item.B_img;
+                    img.alt = 'Order Image';
+                    imgCell.appendChild(img);
+
+                    row.appendChild(idCell);
+                    row.appendChild(imgCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(statusCell);
+                    row.appendChild(priceCell);
+                    row.appendChild(tripCell);
+                    row.appendChild(paywayCell);
+                    
+
+                    orderTableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching order items:', error);
+            });
+    </script>
+</body>
+
+</html>

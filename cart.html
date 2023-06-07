@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="cartcss.css">
+  <title>Shopping Cart</title>
+</head>
+
+<body>
+  <header>
+    <h1>Bookability</h1>
+    <nav>
+      <ul>
+        <li><a href="menu.html">首頁</a></li>
+        <li><a href="cart.html">購物車</a></li>
+        <li><a href="wishl.html">願望清單</a></li>
+        <li><a href="manage.html">管理訂單</a></li>
+        <li><a href="history.html">歷史記錄</a></li>
+        <li><a href="personal.html">個人資料</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <h1>購物車</h1>
+
+  <table id="cart-table">
+    <thead>
+      <tr>
+        <th>勾選</th>
+        <th>圖片</th>
+        <th>書名</th>
+        <th>價格</th>
+        <th>庫存</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Cart items will be dynamically generated here -->
+    </tbody>
+  </table>
+
+  <button id="checkout-button">結賬</button>
+
+  <script>
+    fetch('http://localhost:3000/api/cart')
+      .then(response => response.json())
+      .then(cartItems => {
+        const cartTableBody = document.querySelector('#cart-table tbody');
+
+        cartItems.forEach(item => {
+          const row = document.createElement('tr');
+
+          const checkboxCell = document.createElement('td');
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'product-checkbox'; // Add a class to identify the checkboxes
+          checkboxCell.appendChild(checkbox);
+
+          const imgCell = document.createElement('td');
+          const img = document.createElement('img');
+          imgCell.id = "productt-image";
+          img.src = item.B_img;
+          img.id="product-image";
+          img.alt = item.B_name;
+          imgCell.appendChild(img);
+
+          const nameCell = document.createElement('td');
+          nameCell.textContent = item.B_name;
+
+          const priceCell = document.createElement('td');
+          priceCell.textContent = item.B_price;
+
+          const stockCell = document.createElement('td');
+          stockCell.textContent = item.B_stock;
+
+          const deleteCell = document.createElement('td');
+          const deleteButton = document.createElement('button');
+          deleteButton.textContent = '刪除';
+          deleteButton.addEventListener('click', () => {
+            deleteCartItem(item.Car_ID);
+          });
+          deleteCell.appendChild(deleteButton);
+
+          row.appendChild(checkboxCell);
+          row.appendChild(imgCell);
+          row.appendChild(nameCell);
+          row.appendChild(priceCell);
+          row.appendChild(stockCell);
+          row.appendChild(deleteCell);
+
+          cartTableBody.appendChild(row);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching cart items:', error);
+      });
+
+    const checkoutButton = document.getElementById('checkout-button');
+    checkoutButton.addEventListener('click', () => {
+      
+
+      fetch('http://localhost:3000/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('結賬失敗。請稍後再試。');
+          }
+        })
+        .then(data => {
+          // 在此处执行将数据存入订单表的操作（根据返回的数据data）
+          location.reload();
+          alert('結賬成功！');
+        })
+        .catch(error => {
+          console.error('Error during checkout:', error);
+          alert('結賬失敗。請稍後再試。');
+        });
+    });
+
+    function deleteCartItem(cartItemId) {
+      fetch(`http://localhost:3000/api/cart/${cartItemId}`, {
+        method: 'DELETE'
+      })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+            alert('刪除成功！');
+          } else {
+            alert('刪除失敗。請稍後再試。');
+          }
+        })
+        .catch(error => {
+          console.error('Error during item deletion:', error);
+          alert('刪除失敗。請稍後再試。');
+        });
+    }
+  </script>
+</body>
+
+</html>

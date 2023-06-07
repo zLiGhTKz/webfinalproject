@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="bookcss.css">
+  <title>Book Details</title>
+</head>
+
+<body>
+  <header>
+    <h1>Bookability</h1>
+    <nav>
+      <ul>
+        <li><a href="menu.html">首頁</a></li>
+        <li><a href="cart.html">購物車</a></li>
+        <li><a href="wishl.html">願望清單</a></li>
+        <li><a href="manage.html">管理訂單</a></li>
+        <li><a href="history.html">歷史記錄</a></li>
+        <li><a href="personal.html">個人資料</a></li>
+      </ul>
+    </nav>
+  </header>
+  <h1>商品内容</h1>
+  <div id="book-details">
+    <!-- Book details will be dynamically generated here -->
+  </div>
+
+  <button id="add-to-cart-button">加入購物車</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('id');
+
+    fetch(`http://localhost:3000/api/books/${bookId}`)
+      .then(response => response.json())
+      .then(book => {
+        const bookDetailsContainer = document.getElementById('book-details');
+
+        const img = document.createElement('img');
+        img.src = book.B_img;
+        img.alt = book.B_name;
+
+        const h2 = document.createElement('h2');
+        h2.textContent = book.B_name;
+
+        const author = document.createElement('p');
+        author.textContent = `Author: ${book.Author_name}`;
+
+        const stock = document.createElement('p');
+        stock.textContent = `Stock: ${book.B_stock}`;
+
+        const detail = document.createElement('p');
+        detail.textContent = `Detail: ${book.B_detail}`;
+
+        const price = document.createElement('p');
+        price.textContent = `Price: $${book.B_price}`;
+
+        const pub = document.createElement('p');
+        pub.textContent = `Publisher: ${book.B_pub}`;
+
+        bookDetailsContainer.appendChild(img);
+        bookDetailsContainer.appendChild(h2);
+        bookDetailsContainer.appendChild(author);
+        bookDetailsContainer.appendChild(stock);
+        bookDetailsContainer.appendChild(detail);
+        bookDetailsContainer.appendChild(price);
+        bookDetailsContainer.appendChild(pub);
+
+        const addToCartButton = document.getElementById('add-to-cart-button');
+        addToCartButton.addEventListener('click', () => {
+          const cartItem = {
+            B_ID: book.B_ID,
+            B_name: book.B_name,
+            B_stock: book.B_stock,
+            B_price: book.B_price,
+            B_img: book.B_img
+          };
+
+          fetch('http://localhost:3000/api/cart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(cartItem)
+          })
+            .then(response => {
+              if (response.ok) {
+                alert('成功添加到購物車！');
+              } else {
+                alert('添加到購物車失敗。請稍後再試。');
+              }
+            })
+            .catch(error => {
+              console.error('Error adding to cart:', error);
+              alert('添加到購物車失敗。請稍後再試。');
+            });
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching book details:', error);
+      });
+  </script>
+</body>
+
+</html>
+

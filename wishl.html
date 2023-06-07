@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="wishcss.css">
+    <title>Shopping wish</title>
+</head>
+
+<body>
+    <header>
+        <h1>Bookability</h1>
+        <nav>
+            <ul>
+                <li><a href="menu.html">首頁</a></li>
+                <li><a href="cart.html">購物車</a></li>
+                <li><a href="wishl.html">願望清單</a></li>
+                <li><a href="manage.html">管理訂單</a></li>
+                <li><a href="history.html">歷史記錄</a></li>
+                <li><a href="personal.html">個人資料</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <h1>願望清單</h1>
+
+    <table id="wish-table">
+        <thead>
+            <tr>
+                <th>勾選</th>
+                <th>圖片</th>
+                <th>書名</th>
+                <th>價格</th>
+                <th>庫存</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- wish items will be dynamically generated here -->
+        </tbody>
+    </table>
+
+    <button id="add-to-cart-button">加入購物車</button>
+
+    <script>
+        fetch('http://localhost:3000/api/wish')
+            .then(response => response.json())
+            .then(wishItems => {
+                const wishTableBody = document.querySelector('#wish-table tbody');
+
+                wishItems.forEach(item => {
+                    const row = document.createElement('tr');
+
+                    const checkboxCell = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'product-checkbox';
+                    checkboxCell.appendChild(checkbox);
+
+                    const imgCell = document.createElement('td');
+                    const img = document.createElement('img');
+                    imgCell.id = "productt-image";
+                    img.src = item.B_img;
+                    img.id = "product-image";
+                    img.alt = item.B_name;
+                    imgCell.appendChild(img);
+
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = item.B_name;
+
+                    const priceCell = document.createElement('td');
+                    priceCell.textContent = item.B_price;
+
+                    const stockCell = document.createElement('td');
+                    stockCell.textContent = item.B_stock;
+
+                    const stockInput = document.createElement('input');
+                    stockInput.type = 'hidden';
+                    stockInput.value = item.B_stock;
+                    stockCell.appendChild(stockInput);
+
+                    const deleteCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = '刪除';
+                    deleteButton.addEventListener('click', () => {
+                        deletewishItem(item.wishL_ID);
+                    });
+                    deleteCell.appendChild(deleteButton);
+
+                    row.appendChild(checkboxCell);
+                    row.appendChild(imgCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(priceCell);
+                    row.appendChild(stockCell);
+                    row.appendChild(deleteCell);
+
+                    wishTableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching wish items:', error);
+            });
+
+        function addToCart() {
+            fetch('http://localhost:3000/api/add-to-cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                        alert('成功加入購物車！');
+                    } else {
+                        alert('加入購物車失敗。請稍後再試。');
+                    }
+                })
+                .catch(error => {
+                    console.error('添加商品到購物車時發生錯誤:', error);
+                    alert('加入購物車失敗。請稍後再試。');
+                });
+        }
+        document.getElementById('add-to-cart-button').addEventListener('click', addToCart);
+        function deletewishItem(wishItemId) {
+            fetch(`http://localhost:3000/api/wish/${wishItemId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                        alert('刪除成功！');
+                    } else {
+                        alert('刪除失敗。請稍後再試。');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during item deletion:', error);
+                    alert('刪除失敗。請稍後再試。');
+                });
+        }
+    </script>
+</body>
+
+</html>

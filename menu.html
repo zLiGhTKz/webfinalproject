@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bookability</title>
+    <link rel="stylesheet" href="menucss.css">
+    <script src="menujs.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Bookability</h1>
+        <nav>
+            <ul>
+                <li><a href="menu.html">首頁</a></li>
+                <li><a href="cart.html">購物車</a></li>
+                <li><a href="wishl.html">願望清單</a></li>
+                <li><a href="manage.html">管理訂單</a></li>
+                <li><a href="history.html">歷史記錄</a></li>
+                <li><a href="personal.html">個人資料</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="search-filter">
+        <input type="text" id="search-input" placeholder="搜尋產品...">
+        <select id="filter-select">
+            <option value="all">所有</option>
+            <option value=1>本傳</option>
+            <option value=2>番外</option>
+        </select>
+        <button onclick="filterProducts()">過濾</button>
+    </section>
+    <h1>每日精選</h1>
+    <section class="products" id="products-container">
+        <!-- Products will be dynamically generated here -->
+    </section>
+
+    <footer>
+        <p>版權所有 &copy; 2023 Bookability 網上商店 <a href="#" class="contact">聯繫我們</a></p>
+    </footer>
+
+    <script>
+        // Fetch books data from the API
+        fetch('http://localhost:3000/api/books')
+            .then(response => response.json())
+            .then(data => {
+                const productsContainer = document.getElementById('products-container');
+
+                // Generate HTML for each book
+                data.forEach(book => {
+                    const productDiv = document.createElement('div');
+                    productDiv.className = 'product';
+                    productDiv.setAttribute('data-category', book.B_type);
+
+                    const img = document.createElement('img');
+                    img.src = book.B_img; // Replace 'image' with the actual property name from the API response
+                    img.alt = book.B_name; // Replace 'title' with the actual property name from the API response
+
+                    const h2 = document.createElement('h2');
+                    h2.textContent = book.B_name; // Replace 'title' with the actual property name from the API response
+
+                    const viewButton = document.createElement('button');
+                    viewButton.textContent = '查看商品';
+
+                    const wishlistButton = document.createElement('button');
+                    wishlistButton.className = 'wishlist-button';
+                    wishlistButton.textContent = '添加到願望清單';
+                    viewButton.addEventListener('click', () => {
+                        window.location.href = `book.html?id=${book.B_ID}`;
+                    });
+                    wishlistButton.addEventListener('click', () => {
+                        const cartItem = {
+                            B_ID: book.B_ID,
+                            B_name: book.B_name,
+                            B_stock: book.B_stock,
+                            B_price: book.B_price,
+                            B_img: book.B_img
+                        };
+                        fetch('http://localhost:3000/api/wish', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(cartItem)
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    alert('成功添加到願望清單！');
+                                } else {
+                                    alert('添加到願望清單失敗。請稍後再試。');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error adding to cart:', error);
+                                alert('添加到購物車失敗。請稍後再試。');
+                            });
+                    });
+                    // Append elements to productDiv
+                    productDiv.appendChild(img);
+                    productDiv.appendChild(h2);
+                    productDiv.appendChild(viewButton);
+                    productDiv.appendChild(wishlistButton);
+
+                    // Append productDiv to productsContainer
+                    productsContainer.appendChild(productDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching books:', error);
+            });
+
+        function filterProducts() {
+            const searchInput = document.getElementById('search-input');
+            const filterSelect = document.getElementById('filter-select');
+            const products = document.querySelectorAll('.product');
+
+            const searchKeyword = searchInput.value.toLowerCase();
+            const selectedCategory = filterSelect.value;
+
+            products.forEach(product => {
+                const productTitle = product.querySelector('h2').textContent.toLowerCase();
+                const productCategory = product.getAttribute('data-category');
+
+                if (
+                    (selectedCategory === 'all' || selectedCategory === productCategory) &&
+                    (productTitle.includes(searchKeyword) || searchKeyword === '')
+                ) {
+                    product.style.display = 'block';
+                } else {
+                    product.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
